@@ -1,4 +1,4 @@
 shape-recognition
 =================
 
-Short function to find a shape
+Experimental function to find a **single** shape within raw data. All text files provide test cases.
