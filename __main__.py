@@ -95,10 +95,14 @@ if __name__ == '__main__':
         'square.txt': 'SQUARE',
         'square_invalid.txt': 'UNKNOWN',
         'square_3d.txt': 'SQUARE',
-        'triangle_a.txt': 'TRIANGLE',
-        'triangle_b.txt': 'TRIANGLE',
-        'triangle_c.txt': 'TRIANGLE',
-        'triangle_d.txt': 'TRIANGLE'
+        'triangle_isosceles_a.txt': 'TRIANGLE',
+        'triangle_isosceles_b.txt': 'TRIANGLE',
+        'triangle_isosceles_c.txt': 'TRIANGLE',
+        'triangle_rectangle_a.txt': 'TRIANGLE',
+        'triangle_rectangle_b.txt': 'TRIANGLE',
+        'triangle_rectangle_c.txt': 'TRIANGLE',
+        'triangle_rectangle_d.txt': 'TRIANGLE',
+        'triangle_random_a.txt': 'TRIANGLE',
     }
 
     for current_file, assertion in files.items():
