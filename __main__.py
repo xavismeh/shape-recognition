@@ -104,10 +104,12 @@ if __name__ == '__main__':
         'triangle_rectangle_d.txt': 'TRIANGLE',
         'triangle_random_a.txt': 'TRIANGLE',
     }
-
+    errors = 0
     for current_file, assertion in files.items():
         f = open('./tests/sample/' + current_file)
         result = get_shape_name(f.readlines(), 'X')
         if assertion != result:
+            errors += 1
             print "KO for %s (expected %s - got %s)" % (current_file, assertion, result)
         f.close()
+    print "%d/%d failing tests" % (errors, len(files))
