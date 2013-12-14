@@ -69,19 +69,16 @@ def get_shape_name(input_values, filling_symbol):
             return 'TRIANGLE'
 
         # Random triangle shape : define a square then remove the area of 3 triangles
-        max_x = max(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x'])
-        min_y = min(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])
-        max_y = max(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])
-        covered_area_top_lft = {'x': min(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']), 'y': min_y}
-        covered_area_top_rgt = {'x': max_x, 'y': min_y}
-        covered_area_btm_lft = {'y': max_y}  # X axis is not needed for this case
-        covered_area_btm_rgt = {'x': max_x, 'y': max_y}
+        covered_area_top_lft = {'x': min(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']),
+                                'y': min(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])}
+        covered_area_btm_rgt = {'x': max(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']),
+                                'y': max(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])}
 
         to_del_area = sum(range(top_lft['x'] - covered_area_top_lft['x'], 0, -2))
         to_del_area += sum(range(covered_area_btm_rgt['x'] - btm_lft['x'], 0, -2))
-        to_del_area += sum(range(covered_area_btm_rgt['y'] - covered_area_top_rgt['y'], 0, -1))
+        to_del_area += sum(range(covered_area_btm_rgt['y'] - covered_area_top_lft['y'], 0, -1))
 
-        covered_area = (covered_area_top_rgt['x'] - covered_area_top_lft['x'] + 1) * (covered_area_btm_lft['y'] -
+        covered_area = (covered_area_btm_rgt['x'] - covered_area_top_lft['x'] + 1) * (covered_area_btm_rgt['y'] -
             covered_area_top_lft['y'] + 1) - to_del_area - 1
 
         if covered_area == filled_cells:
