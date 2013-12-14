@@ -1,15 +1,11 @@
-from math import sqrt, floor
-
-
 def get_shape_name(input_values, filling_symbol):
     min_x = min_y = float('inf')
     max_x = max_y = -1
-    filled_cells = 0
+    filled_cells = y = 0
     top_lft = {'x': float('inf'), 'y': float('inf')}
     top_rgt = {'x': -1, 'y': float('inf')}
     btm_lft = {'x': float('inf'), 'y': -1}
     btm_rgt = {'x': -1, 'y': -1}
-    y = 0
 
     for row in input_values:
         for x in range(len(row)):
