@@ -46,19 +46,19 @@ def get_shape_name(input_values, filling_symbol):
     if filled_cells == top_width*lft_height:
         return 'SQUARE' if top_width == lft_height else 'RECTANGLE'
 
-    expected_size = -1
-
     # The shape might be a perfect circle
     diff_x = max_x - min_x + 1
     diff_y = max_y - min_y + 1
     is_centered = (max_x + btm_lft['x'])/2 == top_lft['x']
 
-    if (diff_x == diff_y or (diff_y == diff_x + 1 or diff_x == diff_y + 1)) and is_centered:
+    if is_centered and (diff_x == diff_y or diff_y == diff_x + 1 or diff_x == diff_y + 1):
         expected_size = calculate_surface(diff_x - 2, 0, -2)*2 + diff_x
         if expected_size == filled_cells:
             return 'CIRCLE'
 
     # A triangle maybe ?
+    expected_size = -1
+
     if top_lft == top_rgt or top_lft == btm_lft or btm_lft == btm_rgt:
         # equilateral triangle
         if diff_x == diff_y:
