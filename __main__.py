@@ -1,3 +1,6 @@
+from math import ceil
+
+
 def get_shape_name(input_values, filling_symbol):
     min_x = min_y = float('inf')
     max_x = max_y = -1
@@ -5,7 +8,7 @@ def get_shape_name(input_values, filling_symbol):
     top_lft = {'x': float('inf'), 'y': float('inf')}
     top_rgt = {'x': -1, 'y': float('inf')}
     btm_lft = {'x': float('inf'), 'y': -1}
-    btm_rgt = {'x': -1, 'y': -1}
+    btm_rgt = {'x': float('inf'), 'y': -1}
 
     for row in input_values:
         for x in range(len(row)):
@@ -14,13 +17,17 @@ def get_shape_name(input_values, filling_symbol):
                 max_x, max_y = max(max_x, x), max(max_y, y)
                 filled_cells += 1
 
-                if y == min(y, top_lft['y']) and x == min(x, top_lft['x']):
-                    top_lft = {'x': min(x, top_lft['x']), 'y': min(y, top_lft['y'])}
-                if y <= top_rgt['y']:
+                # Check top left position
+                if y < top_lft['y']:
+                    top_lft = {'x': min(x, top_lft['x']), 'y': y}
+                # Check top right position. Might be the same point as top left
+                if x >= top_lft['x'] and y <= top_rgt['y']:
                     top_rgt = {'x': max(x, top_rgt['x']), 'y': min(y, top_rgt['y'])}
-                if x <= btm_lft['x']:
+                # Check the bottom left position
+                if x <= btm_lft['x'] and y >= btm_lft['y']:
                     btm_lft = {'x': min(x, btm_lft['x']), 'y': max(y, btm_lft['y'])}
-                if y >= btm_rgt['y']:
+                # Check the bottom right position
+                if x >= btm_rgt['x'] or y >= btm_rgt['y']:
                     btm_rgt = {'x': x, 'y': y}
         y += 1
 
@@ -63,28 +70,64 @@ def get_shape_name(input_values, filling_symbol):
             expected_size = sum(range(0, diff_x + 1))
         # isosceles triangle
         elif top_lft['y'] < btm_lft['y'] or btm_rgt['y'] > top_lft['y']:
-            expected_size = sum(range(max(diff_x, diff_y), 0, -2))
+            expected_size = calculate_surface(diff_x, diff_y, -2)
 
         if expected_size == filled_cells:
             return 'TRIANGLE'
 
-        # Random triangle shape : define a square then remove the area of 3 triangles
+        # Random triangle shape : define a square then remove the area of 3 triangles (4 actually but 1 does not exist)
         covered_area_top_lft = {'x': min(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']),
                                 'y': min(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])}
         covered_area_btm_rgt = {'x': max(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']),
                                 'y': max(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])}
 
-        to_del_area = sum(range(top_lft['x'] - covered_area_top_lft['x'], 0, -2))
-        to_del_area += sum(range(covered_area_btm_rgt['x'] - btm_lft['x'], 0, -2))
-        to_del_area += sum(range(covered_area_btm_rgt['y'] - covered_area_top_lft['y'], 0, -1))
+        to_del_area = 0
+
+        # calculate the top left triangle size
+        top_lft_width = top_lft['x'] - covered_area_top_lft['x']
+        top_lft_height = max(top_lft['y'], btm_lft['y']) - covered_area_top_lft['y']
+        to_del_area += calculate_for_shape(top_lft_width, top_lft_height)
+
+        # calculate the top right triangle size
+        top_rgt_width = covered_area_btm_rgt['x'] - top_rgt['x']
+        top_rgt_height = min(covered_area_btm_rgt['y'], btm_rgt['y']) - covered_area_top_lft['y']
+        to_del_area += calculate_for_shape(top_rgt_width, top_rgt_height)
+
+        # calculate the bottom left triangle size
+        btm_lft_width = covered_area_btm_rgt['x'] - min(btm_lft['x'], btm_rgt['x'])
+        btm_lft_height = covered_area_btm_rgt['y'] - btm_lft['y']
+        to_del_area += calculate_for_shape(btm_lft_width, btm_lft_height)
+
+        # calculate the bottom right triangle size
+        btm_rgt_width = covered_area_btm_rgt['x'] - btm_rgt['x']
+        btm_rgt_height = covered_area_btm_rgt['y'] - btm_rgt['y']
+        to_del_area += calculate_for_shape(btm_rgt_width, btm_rgt_height)
 
         covered_area = (covered_area_btm_rgt['x'] - covered_area_top_lft['x'] + 1) * (covered_area_btm_rgt['y'] -
-            covered_area_top_lft['y'] + 1) - to_del_area - 1
+            covered_area_top_lft['y'] + 1) - to_del_area
 
         if covered_area == filled_cells:
             return 'TRIANGLE'
 
     return 'UNKNOWN'
+
+
+def calculate_step(width, height):
+    if width == 0 or height == 0:
+        return -1
+    step = ceil(max(width, height)/min(width, height))
+    return int(step*-1)
+
+
+def calculate_surface(width, height, step):
+    return sum(range(max(width, height), 0, step))
+
+
+def calculate_for_shape(width, height):
+    if width == 0 or height == 0:
+        return 0
+    step = calculate_step(width, height)
+    return calculate_surface(width, height, step)
 
 
 if __name__ == '__main__':
@@ -114,6 +157,8 @@ if __name__ == '__main__':
         'triangle_rectangle_c.txt': 'TRIANGLE',
         'triangle_rectangle_d.txt': 'TRIANGLE',
         'triangle_random_a.txt': 'TRIANGLE',
+        'triangle_random_b.txt': 'TRIANGLE',
+        'triangle_random_c.txt': 'TRIANGLE',
     }
     errors = 0
     for current_file, assertion in files.items():
