@@ -1,3 +1,6 @@
+from math import sqrt, floor
+
+
 def get_shape_name(input_values, filling_symbol):
     min_x = min_y = float('inf')
     max_x = max_y = -1
@@ -15,7 +18,7 @@ def get_shape_name(input_values, filling_symbol):
                 max_x, max_y = max(max_x, x), max(max_y, y)
                 filled_cells += 1
 
-                if y == min(y, top_lft['y']):
+                if y == min(y, top_lft['y']) and x == min(x, top_lft['x']):
                     top_lft = {'x': min(x, top_lft['x']), 'y': min(y, top_lft['y'])}
                 if y <= top_rgt['y']:
                     top_rgt = {'x': max(x, top_rgt['x']), 'y': min(y, top_rgt['y'])}
@@ -51,41 +54,60 @@ def get_shape_name(input_values, filling_symbol):
     is_centered = (max_x + btm_lft['x'])/2 == top_lft['x']
 
     if (diff_x == diff_y or (diff_y == diff_x + 1 or diff_x == diff_y + 1)) and is_centered:
-
-        expected_size = 0
-        i = diff_x - 2
-
-        while i > 0:
-            expected_size += i
-            i -= 2
-
-        if expected_size*2 + diff_x == filled_cells:
+        expected_size = sum(range(diff_x - 2, 0, -2))*2 + diff_x
+        if expected_size == filled_cells:
             return 'CIRCLE'
+
+    # A triangle maybe ?
+    if top_lft == top_rgt or top_lft == btm_lft:
+        expected_size = -1
+
+        # equilateral triangle
+        if diff_x == diff_y:
+            expected_size = sum(range(0, diff_x + 1))
+        # isosceles triangle
+        elif top_lft['y'] < btm_lft['y'] or btm_rgt['y'] > top_lft['y']:
+            expected_size = sum(range(diff_x, 0, -2))
+
+        # random triangle
+        #if (top_lft == top_rgt and btm_rgt != top_lft) or (top_lft == btm_lft and top_lft != btm_lft):
+        #    print top_lft, top_rgt, btm_lft, btm_rgt
+        #    print diff_x, diff_y
+
+        if filled_cells == expected_size:
+            return 'TRIANGLE'
 
     return 'UNKNOWN'
 
 
 if __name__ == '__main__':
     files = {
-        'circle_even.txt': 'CIRCLE',
-        'circle_even_800x600.txt': 'CIRCLE',
-        'circle_even_invalid_a.txt': 'UNKNOWN',
-        'circle_even_invalid_b.txt': 'UNKNOWN',
-        'circle_odd.txt': 'CIRCLE',
-        'circle_odd_invalid_a.txt': 'UNKNOWN',
-        'circle_odd_invalid_b.txt': 'UNKNOWN',
-        'dot.txt': 'DOT',
-        'random.txt': 'UNKNOWN',
-        'rectangle.txt': 'RECTANGLE',
-        'rectangle_3d_a.txt': 'RECTANGLE',
-        'rectangle_3d_b.txt': 'RECTANGLE',
-        'square.txt': 'SQUARE',
-        'square_invalid.txt': 'UNKNOWN',
-        'square_3d.txt': 'SQUARE',
+        #'circle_even.txt': 'CIRCLE',
+        #'circle_even_800x600.txt': 'CIRCLE',
+        #'circle_even_invalid_a.txt': 'UNKNOWN',
+        #'circle_even_invalid_b.txt': 'UNKNOWN',
+        #'circle_odd.txt': 'CIRCLE',
+        #'circle_odd_invalid_a.txt': 'UNKNOWN',
+        #'circle_odd_invalid_b.txt': 'UNKNOWN',
+        #'dot.txt': 'DOT',
+        #'none.txt': 'NONE',
+        #'random.txt': 'UNKNOWN',
+        #'rectangle.txt': 'RECTANGLE',
+        #'rectangle_3d_a.txt': 'RECTANGLE',
+        #'rectangle_3d_b.txt': 'RECTANGLE',
+        #'rectangle_3d_c.txt': 'RECTANGLE',
+        #'square.txt': 'SQUARE',
+        #'square_invalid.txt': 'UNKNOWN',
+        #'square_3d.txt': 'SQUARE',
+        'triangle_a.txt': 'TRIANGLE',
+        'triangle_b.txt': 'TRIANGLE',
+        'triangle_c.txt': 'TRIANGLE',
+        'triangle_d.txt': 'TRIANGLE'
     }
 
     for current_file, assertion in files.items():
-        f = open(current_file)
+        f = open('./tests/sample/' + current_file)
         result = get_shape_name(f.readlines(), 'X')
         if assertion != result:
             print "KO for %s (expected %s - got %s)" % (current_file, assertion, result)
+        f.close()
