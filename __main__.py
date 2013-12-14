@@ -40,16 +40,11 @@ def get_shape_name(input_values, filling_symbol):
         return 'DOT'
 
     top_width = top_rgt['x'] - top_lft['x'] + 1
-    btm_width = btm_rgt['x'] - btm_lft['x'] + 1
     lft_height = btm_lft['y'] - top_lft['y'] + 1
-    rgt_height = btm_rgt['y'] - top_rgt['y'] + 1
 
     # The shape is perfectly filled so it can be either a square or a rectangle
     if filled_cells == top_width*lft_height:
-        if top_width == btm_width == lft_height == rgt_height:
-            return 'SQUARE'
-
-        return 'RECTANGLE'
+        return 'SQUARE' if top_width == lft_height else 'RECTANGLE'
 
     expected_size = -1
 
@@ -59,7 +54,7 @@ def get_shape_name(input_values, filling_symbol):
     is_centered = (max_x + btm_lft['x'])/2 == top_lft['x']
 
     if (diff_x == diff_y or (diff_y == diff_x + 1 or diff_x == diff_y + 1)) and is_centered:
-        expected_size = sum(range(diff_x - 2, 0, -2))*2 + diff_x
+        expected_size = calculate_surface(diff_x - 2, 0, -2)*2 + diff_x
         if expected_size == filled_cells:
             return 'CIRCLE'
 
