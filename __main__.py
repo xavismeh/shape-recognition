@@ -44,6 +44,8 @@ def get_shape_name(input_values, filling_symbol):
 
         return 'RECTANGLE'
 
+    expected_size = -1
+
     # The shape might be a perfect circle
     diff_x = max_x - min_x + 1
     diff_y = max_y - min_y + 1
@@ -55,22 +57,34 @@ def get_shape_name(input_values, filling_symbol):
             return 'CIRCLE'
 
     # A triangle maybe ?
-    if top_lft == top_rgt or top_lft == btm_lft:
-        expected_size = -1
-
+    if top_lft == top_rgt or top_lft == btm_lft or btm_lft == btm_rgt:
         # equilateral triangle
         if diff_x == diff_y:
             expected_size = sum(range(0, diff_x + 1))
         # isosceles triangle
         elif top_lft['y'] < btm_lft['y'] or btm_rgt['y'] > top_lft['y']:
-            expected_size = sum(range(diff_x, 0, -2))
+            expected_size = sum(range(max(diff_x, diff_y), 0, -2))
 
-        # random triangle
-        #if (top_lft == top_rgt and btm_rgt != top_lft) or (top_lft == btm_lft and top_lft != btm_lft):
-        #    print top_lft, top_rgt, btm_lft, btm_rgt
-        #    print diff_x, diff_y
+        if expected_size == filled_cells:
+            return 'TRIANGLE'
 
-        if filled_cells == expected_size:
+        # Random triangle shape : define a square then remove the area of 3 triangles
+        max_x = max(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x'])
+        min_y = min(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])
+        max_y = max(top_lft['y'], top_rgt['y'], btm_lft['y'], btm_rgt['y'])
+        covered_area_top_lft = {'x': min(top_lft['x'], top_rgt['x'], btm_lft['x'], btm_rgt['x']), 'y': min_y}
+        covered_area_top_rgt = {'x': max_x, 'y': min_y}
+        covered_area_btm_lft = {'y': max_y}  # X axis is not needed for this case
+        covered_area_btm_rgt = {'x': max_x, 'y': max_y}
+
+        to_del_area = sum(range(top_lft['x'] - covered_area_top_lft['x'], 0, -2))
+        to_del_area += sum(range(covered_area_btm_rgt['x'] - btm_lft['x'], 0, -2))
+        to_del_area += sum(range(covered_area_btm_rgt['y'] - covered_area_top_rgt['y'], 0, -1))
+
+        covered_area = (covered_area_top_rgt['x'] - covered_area_top_lft['x'] + 1) * (covered_area_btm_lft['y'] -
+            covered_area_top_lft['y'] + 1) - to_del_area - 1
+
+        if covered_area == filled_cells:
             return 'TRIANGLE'
 
     return 'UNKNOWN'
